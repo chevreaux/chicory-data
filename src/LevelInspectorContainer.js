@@ -8,6 +8,7 @@ import convertCoordinatesToLevelId from './util/convertCoordinatesToLevelId';
 type Props = $ReadOnly<{
 	levels: {[levelId: string]: LevelType},
 	setLevelsData: ({[levelId: string]: LevelType}) => mixed,
+	sprites: {[name: string]: string},
 }>;
 
 export default function LevelInspectorContainer(props: Props): React$Node {
@@ -24,6 +25,7 @@ export default function LevelInspectorContainer(props: Props): React$Node {
 		<LevelInspector
 			level={props.levels[convertCoordinatesToLevelId(currentCoordinates)]}
 			setSingleLevelData={setSingleLevelData}
+			sprites={props.sprites}
 		/>
 	);
 }

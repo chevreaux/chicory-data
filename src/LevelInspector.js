@@ -12,11 +12,13 @@ import type {LevelType} from './types/LevelType';
 type Props = $ReadOnly<{
 	level: LevelType,
 	setSingleLevelData: (LevelType) => mixed,
+	sprites: {[name: string]: string},
 }>;
 
 export default function LevelInspector({
 	level,
 	setSingleLevelData,
+	sprites,
 }: Props): React$Node {
 	useEffect(() => {
 		console.log(level);
@@ -29,8 +31,8 @@ export default function LevelInspector({
 		useState<?[number, number]>(null);
 
 	const [objectIndexHover, setObjectIndexHover] = useState<?number>(null);
-
 	function onMapMouseClick(ev: SyntheticMouseEvent<>) {
+		console.log(sprites);
 		if (addingObjectEntity == null || mapMouseMoveCoordinates == null) {
 			return;
 		}
@@ -98,6 +100,7 @@ export default function LevelInspector({
 						onMapMouseLeave={onMapMouseLeave}
 						onMapMouseMove={onMapMouseMove}
 						onObjectHover={setObjectIndexHover}
+						sprites={sprites}
 					/>
 				</ErrorBoundary>
 			</div>

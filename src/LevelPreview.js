@@ -3,6 +3,7 @@
 import GeoPreview, {GEO_WIDTH, SCREEN_WIDTH} from './GeoPreview';
 import styles from './LevelPreview.module.css';
 import LevelPreviewObjects from './LevelPreviewObjects';
+import LevelPreviewDecos from './LevelPreviewDecos';
 import type {GameObjectEntityType} from './types/GameObjectEntityType';
 import type {LevelType} from './types/LevelType';
 
@@ -15,6 +16,7 @@ type Props = $ReadOnly<{
 	onMapMouseLeave: (ev: SyntheticMouseEvent<HTMLDivElement>) => mixed,
 	onMapMouseMove: (ev: SyntheticMouseEvent<HTMLDivElement>) => mixed,
 	onObjectHover: (objectIndex: ?number) => mixed,
+	sprites: {[name: string]: string},
 }>;
 
 export default function LevelPreview(props: Props): React$Node {
@@ -60,6 +62,15 @@ export default function LevelPreview(props: Props): React$Node {
 					{props.addingObjectEntity.slice('obj'.length)}
 				</div>
 			) : null}
+
+			<LevelPreviewDecos
+				level={props.level}
+				objectIndexHover={props.objectIndexHover}
+				onMapMouseLeave={props.onMapMouseLeave}
+				onMapMouseMove={props.onMapMouseMove}
+				onObjectHover={props.onObjectHover}
+				sprites={props.sprites}
+			/>
 
 			<div className={styles.canvas}>
 				<GeoPreview

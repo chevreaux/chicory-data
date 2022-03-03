@@ -7,6 +7,7 @@ import {CurrentCoordinatesProvider} from './CurrentCoordinatesContext';
 import ErrorBoundary from './ErrorBoundary';
 import AppHeader from './header/AppHeader';
 import DataSelector from './header/DataSelector';
+import SpritesSelector from './header/SpritesSelector';
 import LevelSelector from './header/LevelSelector';
 import LevelInspectorContainer from './LevelInspectorContainer';
 import LoadingBigBanner from './LoadingBigBanner';
@@ -17,6 +18,8 @@ export default function App(): React$Node {
 	const [levelsData, setLevelsData] =
 		useState<?{[levelId: string]: LevelType}>(null);
 	const [drawPreviewsOnWorldMap, setDrawPreviewsOnWorldMap] = useState(false);
+	const [sprites, setSprites] = 
+		useState<?{[name: string]: string}>(null);
 
 	useEffect(() => {
 		window.levelsData = levelsData;
@@ -42,6 +45,14 @@ export default function App(): React$Node {
 							<DataSelector
 								levels={levelsData}
 								onNewLevelsLoad={setLevelsData}
+							/>
+						</ErrorBoundary>
+					}
+					spritesSelector={
+						<ErrorBoundary>
+							<SpritesSelector
+								sprites={sprites}
+								onSpritesLoad={setSprites}
 							/>
 						</ErrorBoundary>
 					}
@@ -80,6 +91,7 @@ export default function App(): React$Node {
 						<LevelInspectorContainer
 							levels={levelsData}
 							setLevelsData={setLevelsData}
+							sprites={sprites}
 						/>
 					</ErrorBoundary>
 				) : null}

@@ -6,6 +6,7 @@ import styles from './AppHeader.module.css';
 
 type Props = $ReadOnly<{
 	dataSelector: React$Node,
+	spritesSelector: React$Node,
 	levelSelector: React$Node,
 	levelSelectorSide: React$Node,
 }>;
@@ -25,6 +26,7 @@ export default function AppHeader(props: Props): React$Node {
 					<h1 className={styles.title}>Chicory: A Colorful Data</h1>
 
 					<div className={styles.dataSelector}>{props.dataSelector}</div>
+					<div className={styles.spritesSelector}>{props.spritesSelector}</div>
 
 					<a
 						className={styles.githubLink}
