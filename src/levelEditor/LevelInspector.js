@@ -8,9 +8,10 @@ import ConsoleNoJest from '../util/ConsoleNoJest';
 import styles from './LevelInspector.module.css';
 import LevelPreview from './preview/LevelPreview';
 import LevelSidebar from './sidebar/LevelSidebar';
-import type {GameObjectEntityType} from './types/GameObjectEntityType';
+import type {GameEntityType} from './types/GameEntityType';
 import type {LevelInspectorUiView} from './types/LevelInspectorUiView';
 import type {LevelType} from './types/LevelType';
+import type {PlaceableType} from './types/PlaceableType';
 import {useWorldDataNonNullable} from './WorldDataContext';
 
 type Props = $ReadOnly<{
@@ -36,13 +37,18 @@ export default function LevelInspector({
 
 	const [activeUiViews, setActiveUiViews] = useState<
 		Array<LevelInspectorUiView>
-	>(['GEO', 'OBJECTS']);
+	>(['GEO', 'OBJECTS', 'DECOS']);
 
 	// Sidebar
-	const [addingObjectEntity, setAddingObjectEntity] =
-		useState<?GameObjectEntityType>(null);
+	const [addingEntityLabel, setAddingEntityLabel] =
+		useState<?PlaceableType>(null);
 	const [objectIndexHover, setObjectIndexHover] = useState<?number>(null);
+	const [decoIndexHover, setDecoIndexHover] = useState<?number>(null);
+
 	const [sidebarObjectsListItemsExpanded, setSidebarObjectsListItemsExpanded] =
+		useState<Array<number>>([]);
+
+	const [sidebarDecosListItemsExpanded, setSidebarDecosListItemsExpanded] =
 		useState<Array<number>>([]);
 
 	useEffect(() => {
@@ -55,20 +61,19 @@ export default function LevelInspector({
 
 	// Events
 	function onMapMouseClick(ev: SyntheticMouseEvent<>) {
-		if (addingObjectEntity == null || mapMouseMoveCoordinates == null) {
+		if (addingEntityLabel == null || mapMouseMoveCoordinates == null) {
 			return;
 		}
-
 		dispatch({
-			type: 'addObjectToLevel',
+			type: 'addEntityToLevel',
 			coordinates: currentCoordinates,
-			objectEntity: addingObjectEntity,
+			entity: addingEntityLabel,
 			x: mapMouseMoveCoordinates[0],
 			y: mapMouseMoveCoordinates[1],
 		});
 
 		if (!ev.shiftKey) {
-			setAddingObjectEntity(null);
+			setAddingEntityLabel(null);
 		}
 	}
 
@@ -91,60 +96,106 @@ export default function LevelInspector({
 		[setMapMouseMoveCoordinates]
 	);
 
-	const onObjectClick = useCallback(
-		(objectIndex: number) => {
-			if (sidebarObjectsListItemsExpanded.includes(objectIndex)) {
-				// todo if the item is already expanded, then it won't scrollIntoView
+	const onEntityClick = useCallback(
+		(index: number, type: GameEntityType) => {
+			if (type === 'OBJECT') {
+				if (sidebarObjectsListItemsExpanded.includes(index)) {
+					// todo if the item is already expanded, then it won't scrollIntoView
+					return;
+				}
+
+				setSidebarObjectsListItemsExpanded(
+					sidebarObjectsListItemsExpanded.concat(index)
+				);
+			} else {
+				if (sidebarDecosListItemsExpanded.includes(index)) {
+					return;
+				}
+
+				setSidebarDecosListItemsExpanded(
+					sidebarDecosListItemsExpanded.concat(index)
+				);
+			}
+		},
+		[sidebarObjectsListItemsExpanded, sidebarDecosListItemsExpanded]
+	);
+
+	const onEntityDelete = useCallback(
+		(deletedObjectIndex: number, type: GameEntityType) => {
+			dispatch({
+				type: 'deleteEntityOnLevel',
+				coordinates: currentCoordinates,
+				index: deletedObjectIndex,
+				entityType: type,
+			});
+			if (type === 'OBJECT') {
+				setSidebarObjectsListItemsExpanded(
+					sidebarObjectsListItemsExpanded.reduce((previous, currentIndex) => {
+						// Skip deleted object index
+						if (currentIndex === deletedObjectIndex) {
+							return previous;
+						}
+
+						// Anything after the deleted object index needs to decrement
+						if (currentIndex > deletedObjectIndex) {
+							previous.push(currentIndex - 1);
+						} else {
+							previous.push(currentIndex);
+						}
+
+						return previous;
+					}, [])
+				);
+			} else {
+				setSidebarDecosListItemsExpanded(
+					sidebarDecosListItemsExpanded.reduce((previous, currentIndex) => {
+						// Skip deleted object index
+						if (currentIndex === deletedObjectIndex) {
+							return previous;
+						}
+
+						// Anything after the deleted object index needs to decrement
+						if (currentIndex > deletedObjectIndex) {
+							previous.push(currentIndex - 1);
+						} else {
+							previous.push(currentIndex);
+						}
+
+						return previous;
+					}, [])
+				);
+			}
+		},
+		[
+			currentCoordinates,
+			dispatch,
+			sidebarObjectsListItemsExpanded,
+			sidebarDecosListItemsExpanded,
+		]
+	);
+
+	const onEntityEditProperty = useCallback(
+		(
+			index: number,
+			key: string,
+			value: string | number,
+			type: GameEntityType
+		) => {
+			const levelObjects = type === 'OBJECT' ? level.objects : level.decos;
+			if (levelObjects == null) {
 				return;
 			}
 
-			setSidebarObjectsListItemsExpanded(
-				sidebarObjectsListItemsExpanded.concat(objectIndex)
-			);
-		},
-		[sidebarObjectsListItemsExpanded]
-	);
-
-	const onObjectDelete = useCallback(
-		(deletedObjectIndex: number) => {
 			dispatch({
-				type: 'deleteObjectOnLevel',
+				type: 'editEntityPropertyOnLevel',
 				coordinates: currentCoordinates,
-				objectIndex: deletedObjectIndex,
-			});
-
-			setSidebarObjectsListItemsExpanded(
-				sidebarObjectsListItemsExpanded.reduce((previous, currentIndex) => {
-					// Skip deleted object index
-					if (currentIndex === deletedObjectIndex) {
-						return previous;
-					}
-
-					// Anything after the deleted object index needs to decrement
-					if (currentIndex > deletedObjectIndex) {
-						previous.push(currentIndex - 1);
-					} else {
-						previous.push(currentIndex);
-					}
-
-					return previous;
-				}, [])
-			);
-		},
-		[currentCoordinates, dispatch, sidebarObjectsListItemsExpanded]
-	);
-
-	const onObjectEditProperty = useCallback(
-		(objectIndex: number, key: string, value: string | number) => {
-			dispatch({
-				type: 'editObjectPropertyOnLevel',
-				coordinates: currentCoordinates,
-				objectIndex,
+				index,
 				key,
 				value,
+				entityType: type,
 			});
 		},
-		[currentCoordinates, dispatch]
+		[currentCoordinates, dispatch, level.objects, level.decos]
 	);
 
 	const onActiveUiViewToggle = useCallback(
@@ -164,7 +215,7 @@ export default function LevelInspector({
 				<ErrorBoundary>
 					<LevelPreview
 						activeUiViews={activeUiViews}
-						addingObjectEntity={addingObjectEntity}
+						addingEntityLabel={addingEntityLabel}
 						currentCoordinates={currentCoordinates}
 						level={level}
 						mapMouseMoveCoordinates={mapMouseMoveCoordinates}
@@ -172,8 +223,10 @@ export default function LevelInspector({
 						onMapMouseClick={onMapMouseClick}
 						onMapMouseLeave={onMapMouseLeave}
 						onMapMouseMove={onMapMouseMove}
-						onObjectClick={onObjectClick}
+						onEntityClick={onEntityClick}
 						onObjectHover={setObjectIndexHover}
+						decoIndexHover={decoIndexHover}
+						onDecoHover={setDecoIndexHover}
 					/>
 				</ErrorBoundary>
 			</div>
@@ -186,11 +239,15 @@ export default function LevelInspector({
 					objectIndexHover={objectIndexHover}
 					objectsListItemsExpanded={sidebarObjectsListItemsExpanded}
 					onActiveUiViewToggle={onActiveUiViewToggle}
-					onAddingObjectEntity={setAddingObjectEntity}
-					onObjectDelete={onObjectDelete}
-					onObjectEditProperty={onObjectEditProperty}
+					onAddingEntityLabel={setAddingEntityLabel}
+					onEntityDelete={onEntityDelete}
+					onEntityEditProperty={onEntityEditProperty}
 					onObjectHover={setObjectIndexHover}
 					setObjectsListItemsExpanded={setSidebarObjectsListItemsExpanded}
+					decoIndexHover={decoIndexHover}
+					onDecoHover={setDecoIndexHover}
+					decosListItemsExpanded={sidebarDecosListItemsExpanded}
+					setDecosListItemsExpanded={setSidebarDecosListItemsExpanded}
 				/>
 			</ErrorBoundary>
 		</div>

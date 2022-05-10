@@ -2,19 +2,20 @@
 
 import GeoPreview from '../common/GeoPreview';
 import {GEO_WIDTH, SCREEN_WIDTH} from '../GeoConstants';
-import type {GameObjectEntityType} from '../types/GameObjectEntityType';
+import type {GameEntityType} from '../types/GameEntityType';
 import type {LevelInspectorUiView} from '../types/LevelInspectorUiView';
 import type {LevelType} from '../types/LevelType';
+import type {PlaceableType} from '../types/PlaceableType';
 
 import LevelInGamePreview from './LevelInGamePreview';
 import styles from './LevelPreview.module.css';
 import LevelPreviewArrows from './LevelPreviewArrows';
-import LevelPreviewObjects from './LevelPreviewObjects';
+import LevelPreviewEntities from './LevelPreviewEntities';
 import LevelPreviewNoViews from './noviews/LevelPreviewNoViews';
 
 type Props = $ReadOnly<{
 	activeUiViews: Array<LevelInspectorUiView>,
-	addingObjectEntity: ?GameObjectEntityType,
+	addingEntityLabel: ?PlaceableType,
 	currentCoordinates: [number, number, number],
 	level: LevelType,
 	mapMouseMoveCoordinates: ?[number, number],
@@ -22,8 +23,10 @@ type Props = $ReadOnly<{
 	onMapMouseClick: (ev: SyntheticMouseEvent<HTMLDivElement>) => mixed,
 	onMapMouseLeave: (ev: SyntheticMouseEvent<HTMLDivElement>) => mixed,
 	onMapMouseMove: (ev: SyntheticMouseEvent<HTMLDivElement>) => mixed,
-	onObjectClick: (objectIndex: number) => mixed,
+	onEntityClick: (entityIndex: number, entityType: GameEntityType) => mixed,
 	onObjectHover: (objectIndex: ?number) => mixed,
+	decoIndexHover: ?number,
+	onDecoHover: (decoIndex: ?number) => mixed,
 }>;
 
 export default function LevelPreview(props: Props): React$Node {
@@ -52,17 +55,16 @@ export default function LevelPreview(props: Props): React$Node {
 			}}
 		>
 			{props.activeUiViews.includes('OBJECTS') ? (
-				<LevelPreviewObjects
+				<LevelPreviewEntities
 					level={props.level}
-					objectIndexHover={props.objectIndexHover}
-					onMapMouseLeave={props.onMapMouseLeave}
-					onObjectClick={props.onObjectClick}
-					onObjectHover={props.onObjectHover}
+					entityIndexHover={props.objectIndexHover}
+					onEntityClick={props.onEntityClick}
+					onEntityHover={props.onObjectHover}
+					type="OBJECT"
 				/>
 			) : null}
 
-			{props.activeUiViews.includes('OBJECTS') &&
-			props.addingObjectEntity != null &&
+			{props.addingEntityLabel != null &&
 			props.mapMouseMoveCoordinates != null ? (
 				<div
 					className={styles.addingObjectItem}
@@ -71,8 +73,20 @@ export default function LevelPreview(props: Props): React$Node {
 						top: props.mapMouseMoveCoordinates[1],
 					}}
 				>
-					{props.addingObjectEntity.slice('obj'.length)}
+					{props.addingEntityLabel.type === 'OBJECT'
+						? props.addingEntityLabel.data.slice('obj'.length)
+						: props.addingEntityLabel.data}
 				</div>
+			) : null}
+
+			{props.activeUiViews.includes('DECOS') ? (
+				<LevelPreviewEntities
+					level={props.level}
+					entityIndexHover={props.decoIndexHover}
+					onEntityClick={props.onEntityClick}
+					onEntityHover={props.onDecoHover}
+					type="DECO"
+				/>
 			) : null}
 
 			{props.activeUiViews.includes('INGAME') ? (

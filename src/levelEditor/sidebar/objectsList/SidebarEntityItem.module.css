@@ -2,8 +2,12 @@
 	margin-left: 8px;
 }
 
-.highlight {
+.objHighlight {
 	background: rgb(216, 255, 85);
+}
+
+.decHighlight {
+	background: rgb(85, 96, 255);
 }
 
 .title {
