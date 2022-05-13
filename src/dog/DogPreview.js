@@ -1,6 +1,6 @@
 // @flow strict
 
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 
 import styles from './DogPreview.module.css';
 import drawDogToCanvas from './drawDogToCanvas';
@@ -49,6 +49,8 @@ function useLoadImage(src: ?string) {
 type Props = $ReadOnly<{
 	clothes: string,
 	clothesColor: string,
+	customClothesImage: ?Image,
+	customHatImage: ?Image,
 	hat: string,
 	hatColor: string,
 	hair: string,
@@ -62,27 +64,33 @@ export default function DogPreview(props: Props): React$Node {
 	const mainCanvasRef = useRef<?HTMLCanvasElement>(null);
 
 	// Clothes
-	const clothesInfo = DOG_CLOTHES_LIST.find((clothes) => {
-		return props.clothes === clothes.internalName;
-	});
+	const clothesInfo = useMemo(() => {
+		return DOG_CLOTHES_LIST.find((clothes) => {
+			return props.clothes === clothes.internalName;
+		});
+	}, [props.clothes]);
 
 	if (!clothesInfo) {
 		throw new Error('Invalid clothes ' + props.clothes);
 	}
 
 	// Hat
-	const hatInfo = DOG_HAT_LIST.find((hat) => {
-		return props.hat === hat.internalName;
-	});
+	const hatInfo = useMemo(() => {
+		return DOG_HAT_LIST.find((hat) => {
+			return props.hat === hat.internalName;
+		});
+	}, [props.hat]);
 
 	if (!hatInfo) {
 		throw new Error('Invalid hat ' + props.hat);
 	}
 
 	// Hair
-	const hairInfo = DOG_HAIR_LIST.find((hair) => {
-		return props.hair === hair.internalName;
-	});
+	const hairInfo = useMemo(() => {
+		return DOG_HAIR_LIST.find((hair) => {
+			return props.hair === hair.internalName;
+		});
+	}, [props.hair]);
 
 	if (!hairInfo) {
 		throw new Error('Invalid hair ' + props.hair);
@@ -92,6 +100,7 @@ export default function DogPreview(props: Props): React$Node {
 	const clothes = useLoadImage(clothesInfo.imageWithPaddingPath);
 	const idle1 = useLoadImage(idle1ImgSrc);
 	const clothesLayer2 = useLoadImage(clothesInfo.layer2ImagePath);
+	const hatShowHairExtra = useLoadImage(hatInfo.showHairExtraImagePath);
 	const head = useLoadImage(headImgSrc);
 	const hair = useLoadImage(hairInfo.imageWithPaddingPath);
 	const hat = useLoadImage(hatInfo.imageWithPaddingPath);
@@ -108,12 +117,20 @@ export default function DogPreview(props: Props): React$Node {
 			canvas,
 			{
 				idle2,
-				clothes,
+				clothes:
+					clothesInfo.internalName === 'Custom Tee' &&
+					props.customClothesImage != null
+						? props.customClothesImage
+						: clothes,
 				idle1,
 				clothesLayer2,
+				hatShowHairExtra,
 				head,
 				hair,
-				hat,
+				hat:
+					hatInfo.internalName === 'Custom Hat' && props.customHatImage != null
+						? props.customHatImage
+						: hat,
 				hatLayer2,
 				ear,
 			},
@@ -139,10 +156,13 @@ export default function DogPreview(props: Props): React$Node {
 		hat,
 		hatInfo,
 		hatLayer2,
+		hatShowHairExtra,
 		head,
 		idle1,
 		idle2,
 		props.clothesColor,
+		props.customClothesImage,
+		props.customHatImage,
 		props.hatColor,
 		props.skinColor,
 		props.skinOutlineColor,

@@ -15,10 +15,12 @@ type Props = $ReadOnly<{
 	onObjectEditProperty: (
 		objectIndex: number,
 		key: string,
-		value: string | number
+		value: string | number | null
 	) => mixed,
 	onObjectHover: (objectIndex: ?number) => mixed,
-	setObjectsListItemsExpanded: (expandedIndexes: Array<number>) => mixed,
+	setObjectsListItemsExpanded: (
+		expandedIndexes: Array<number> | ((Array<number>) => Array<number>)
+	) => mixed,
 }>;
 
 function SidebarObjectsList(props: Props): React$Node {
@@ -32,19 +34,17 @@ function SidebarObjectsList(props: Props): React$Node {
 
 	const onItemToggle = useCallback(
 		(objectIndex: number) => {
-			if (expandedUnfilteredObjectIndexes.includes(objectIndex)) {
-				setExpandedUnfilteredObjectIndexes(
-					expandedUnfilteredObjectIndexes.filter(
+			setExpandedUnfilteredObjectIndexes((expandedUnfilteredObjectIndexes) => {
+				if (expandedUnfilteredObjectIndexes.includes(objectIndex)) {
+					return expandedUnfilteredObjectIndexes.filter(
 						(index) => index !== objectIndex
-					)
-				);
-			} else {
-				setExpandedUnfilteredObjectIndexes(
-					expandedUnfilteredObjectIndexes.concat(objectIndex)
-				);
-			}
+					);
+				}
+
+				return expandedUnfilteredObjectIndexes.concat(objectIndex);
+			});
 		},
-		[expandedUnfilteredObjectIndexes, setExpandedUnfilteredObjectIndexes]
+		[setExpandedUnfilteredObjectIndexes]
 	);
 
 	const filterLowercase = filter.toLowerCase().trim();

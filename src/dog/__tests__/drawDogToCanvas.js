@@ -1,3 +1,6 @@
+import path from 'path';
+
+import {loadImage} from 'canvas';
 import {toMatchImageSnapshot} from 'jest-image-snapshot';
 
 import drawDogToCanvasTestHelper from '../testUtil/drawDogToCanvasTestHelper';
@@ -23,6 +26,19 @@ test('hiker clothes', async () => {
 		clothesColor: '#ff0000',
 		hair: 'Floofy',
 		hat: 'Beak',
+		hatColor: '#00ff00',
+		skinColor: '#0000ff',
+	});
+
+	expect(image).toMatchImageSnapshot();
+});
+
+test('horns hat', async () => {
+	const image = await drawDogToCanvasTestHelper({
+		clothes: 'Overalls',
+		clothesColor: '#ff0000',
+		hair: 'Pony',
+		hat: 'PLACEHOLDER_CLOTHES2',
 		hatColor: '#00ff00',
 		skinColor: '#0000ff',
 	});
@@ -131,6 +147,26 @@ test('Azure', async () => {
 		hatColor: '#777CE1',
 		skinColor: '#1C2E89',
 		skinOutlineColor: '#03EFF9',
+	});
+
+	expect(image).toMatchImageSnapshot();
+});
+
+// for custom clothes/hat
+test('Cinnaroll', async () => {
+	const image = await drawDogToCanvasTestHelper({
+		clothes: 'Custom Tee',
+		clothesColor: '#CB5587',
+		customClothesImage: await loadImage(
+			path.resolve(__dirname, 'Custom_Tee_Cinnaroll.png')
+		),
+		customHatImage: await loadImage(
+			path.resolve(__dirname, 'Custom_Hat_Cinnaroll.png')
+		),
+		hair: 'Simple',
+		hat: 'Custom Hat',
+		hatColor: '#B996C2',
+		skinColor: '#B38184',
 	});
 
 	expect(image).toMatchImageSnapshot();

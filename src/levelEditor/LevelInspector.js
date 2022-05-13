@@ -55,7 +55,11 @@ export default function LevelInspector({
 
 	// Events
 	function onMapMouseClick(ev: SyntheticMouseEvent<>) {
-		if (addingObjectEntity == null || mapMouseMoveCoordinates == null) {
+		if (
+			addingObjectEntity == null ||
+			mapMouseMoveCoordinates == null ||
+			!activeUiViews.includes('OBJECTS')
+		) {
 			return;
 		}
 
@@ -91,19 +95,16 @@ export default function LevelInspector({
 		[setMapMouseMoveCoordinates]
 	);
 
-	const onObjectClick = useCallback(
-		(objectIndex: number) => {
+	const onObjectClick = useCallback((objectIndex: number) => {
+		setSidebarObjectsListItemsExpanded((sidebarObjectsListItemsExpanded) => {
 			if (sidebarObjectsListItemsExpanded.includes(objectIndex)) {
 				// todo if the item is already expanded, then it won't scrollIntoView
-				return;
+				return sidebarObjectsListItemsExpanded;
 			}
 
-			setSidebarObjectsListItemsExpanded(
-				sidebarObjectsListItemsExpanded.concat(objectIndex)
-			);
-		},
-		[sidebarObjectsListItemsExpanded]
-	);
+			return sidebarObjectsListItemsExpanded.concat(objectIndex);
+		});
+	}, []);
 
 	const onObjectDelete = useCallback(
 		(deletedObjectIndex: number) => {
@@ -113,29 +114,32 @@ export default function LevelInspector({
 				objectIndex: deletedObjectIndex,
 			});
 
-			setSidebarObjectsListItemsExpanded(
-				sidebarObjectsListItemsExpanded.reduce((previous, currentIndex) => {
-					// Skip deleted object index
-					if (currentIndex === deletedObjectIndex) {
+			setSidebarObjectsListItemsExpanded((sidebarObjectsListItemsExpanded) => {
+				return sidebarObjectsListItemsExpanded.reduce(
+					(previous, currentIndex) => {
+						// Skip deleted object index
+						if (currentIndex === deletedObjectIndex) {
+							return previous;
+						}
+
+						// Anything after the deleted object index needs to decrement
+						if (currentIndex > deletedObjectIndex) {
+							previous.push(currentIndex - 1);
+						} else {
+							previous.push(currentIndex);
+						}
+
 						return previous;
-					}
-
-					// Anything after the deleted object index needs to decrement
-					if (currentIndex > deletedObjectIndex) {
-						previous.push(currentIndex - 1);
-					} else {
-						previous.push(currentIndex);
-					}
-
-					return previous;
-				}, [])
-			);
+					},
+					[]
+				);
+			});
 		},
-		[currentCoordinates, dispatch, sidebarObjectsListItemsExpanded]
+		[currentCoordinates, dispatch]
 	);
 
 	const onObjectEditProperty = useCallback(
-		(objectIndex: number, key: string, value: string | number) => {
+		(objectIndex: number, key: string, value: string | number | null) => {
 			dispatch({
 				type: 'editObjectPropertyOnLevel',
 				coordinates: currentCoordinates,
@@ -147,16 +151,15 @@ export default function LevelInspector({
 		[currentCoordinates, dispatch]
 	);
 
-	const onActiveUiViewToggle = useCallback(
-		(uiView: LevelInspectorUiView) => {
+	const onActiveUiViewToggle = useCallback((uiView: LevelInspectorUiView) => {
+		setActiveUiViews((activeUiViews) => {
 			if (activeUiViews.includes(uiView)) {
-				setActiveUiViews(activeUiViews.filter((index) => index !== uiView));
-			} else {
-				setActiveUiViews(activeUiViews.concat(uiView));
+				return activeUiViews.filter((index) => index !== uiView);
 			}
-		},
-		[activeUiViews]
-	);
+
+			return activeUiViews.concat(uiView);
+		});
+	}, []);
 
 	return (
 		<div className={styles.root}>
