@@ -1,6 +1,12 @@
 .item {
 	position: absolute;
 	z-index: 3;
+	transform-origin: '50% 50%';
+}
+
+.itemDeco {
+	position: absolute;
+	z-index: 2;
 }
 
 .objHover {
@@ -8,5 +14,6 @@
 }
 
 .decoHover {
-	background: rgb(182, 154, 255);
+	outline: solid 5px;
+	outline-color: rgb(182, 154, 255);
 }
