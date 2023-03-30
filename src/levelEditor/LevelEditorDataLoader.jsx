@@ -27,14 +27,7 @@ export default function LevelEditorDataLoader(props: Props): React$Node {
 	}, []);
 
 	// Do first load
-	useEffect(() => {
-		if (worldData == null) {
-			// $FlowFixMe[untyped-import]
-			import('./level_data.json')
-				.then((initialWorldData) => {
-					dispatch({
-						type: 'setWorldData',
-						worldData: initialWorldData.default,
+	useEffec
 					});
 
 					dispatch({

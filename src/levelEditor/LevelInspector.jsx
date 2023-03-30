@@ -188,7 +188,14 @@ export default function LevelInspector({
 					doEyedropper(mapMouseMoveCoordinates);
 				}
 		},
-		[mapMouseMoveCoordinates, addingEntityLabel, editorToolType, paint, doFloodFill, doEyedropper]
+		[
+			mapMouseMoveCoordinates,
+			addingEntityLabel,
+			editorToolType,
+			paint,
+			doFloodFill,
+			doEyedropper,
+		]
 	);
 
 	const onMapMouseLeave = useCallback(
